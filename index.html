@@ -1,0 +1,160 @@
+<script>
+
+let admin="บิว"
+
+let members=JSON.parse(localStorage.getItem("members"))||{
+"ออม":770,
+"ต้น":827,
+"โอ๊ค":550,
+"บิว":25000
+}
+
+let codes={
+"ออม":"k642mut",
+"ต้น":"TONTONRODPAN",
+"โอ๊ค":"tootuokj",
+"บิว":"admin"
+}
+
+let currentUser=null
+let history=JSON.parse(localStorage.getItem("history"))||[]
+
+function save(){
+localStorage.setItem("members",JSON.stringify(members))
+localStorage.setItem("history",JSON.stringify(history))
+}
+
+function getTime(){
+let now=new Date()
+return now.toLocaleString()
+}
+
+function getRank(p){
+if(p>=2000)return"👑 LEGEND"
+if(p>=1000)return"💎 ELITE"
+if(p>=700)return"🔥 PRO"
+if(p>=300)return"⭐ MEMBER"
+return"🌱 NEW"
+}
+
+function renderTable(){
+
+let table=document.getElementById("scoreTable")
+
+table.innerHTML="<tr><th>ชื่อ</th><th>แต้ม</th><th>Rank</th></tr>"
+
+let sorted=Object.entries(members).sort((a,b)=>b[1]-a[1])
+
+for(let m of sorted){
+
+table.innerHTML+=`
+<tr>
+<td>${m[0]}</td>
+<td>${m[1]}</td>
+<td>${getRank(m[1])}</td>
+</tr>
+`
+
+}
+
+}
+
+function renderHistory(){
+
+let list=document.getElementById("history")
+
+list.innerHTML=""
+
+for(let i=history.length-1;i>=0;i--){
+
+list.innerHTML+=`<li>${history[i]}</li>`
+
+}
+
+}
+
+function login(){
+
+let name=document.getElementById("name").value
+let code=document.getElementById("code").value
+
+if(codes[name]==code){
+
+currentUser=name
+document.getElementById("loginStatus").innerText="✅ ล็อกอินสำเร็จ : "+name
+
+}else{
+
+document.getElementById("loginStatus").innerText="❌ รหัสผิด"
+
+}
+
+}
+
+function redeem(cost,item){
+
+if(!currentUser){
+document.getElementById("redeemResult").innerText="❌ ต้องล็อกอินก่อน"
+return
+}
+
+if(members[currentUser]===undefined){
+document.getElementById("redeemResult").innerText="❌ ไม่พบสมาชิก"
+return
+}
+
+if(members[currentUser] < cost){
+document.getElementById("redeemResult").innerText="❌ แต้มไม่พอ"
+return
+}
+
+members[currentUser]-=cost
+
+let log=`${getTime()} | ${currentUser} แลก ${item} (-${cost})`
+
+history.push(log)
+
+document.getElementById("redeemResult").innerText="🎁 แลกสำเร็จ"
+
+save()
+renderTable()
+renderHistory()
+
+}
+
+function changePoint(){
+
+if(currentUser!=admin){
+alert("เฉพาะหัวแคลนเท่านั้น")
+return
+}
+
+let name=document.getElementById("target").value
+let change=parseInt(document.getElementById("pointChange").value)
+
+if(!members[name]){
+alert("ไม่มีสมาชิกนี้")
+return
+}
+
+members[name]+=change
+
+if(members[name]<0){
+members[name]=0
+}
+
+let log=`${getTime()} | ADMIN เปลี่ยนแต้ม ${name} ${change}`
+
+history.push(log)
+
+save()
+
+renderTable()
+renderHistory()
+
+}
+
+renderTable()
+renderHistory()
+
+</script>
